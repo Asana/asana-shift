@@ -1,0 +1,53 @@
+{
+    "name": "asana-shift",
+    "version": "1.0.0",
+    "description":
+        "A small script which uses the Asana API to remove external users (ie without a company email) from an organization if they haven't logged in for 30 days",
+    "main": "./dist/shift.js",
+    "scripts": {
+        "test": "jest ./tests",
+        "watch": "webpack --env.dev --watch",
+        "build": "webpack --env.prod",
+        "build:prod": "webpack --env.prod",
+        "build:dev": "webpack --env.dev",
+        "build:pkg": "pkg ./dist/shift.js --out-path ./dist"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Asana/deprovision_inactive_guests.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/Asana/deprovision_inactive_guests/issues"
+    },
+    "homepage": "https://github.com/Asana/deprovision_inactive_guests#readme",
+    "jest": {
+        "transform": {
+            "^.+\\.ts?$": "./node_modules/ts-jest/preprocessor.js"
+        },
+        "testRegex": "(/tests/.*|(\\.|/)(test|spec))\\.ts?$",
+        "moduleFileExtensions": ["ts", "tsx", "js", "json"]
+    },
+    "dependencies": {
+        "axios": "^0.18.0",
+        "chalk": "^2.3.2",
+        "commander": "^2.15.1",
+        "moment": "^2.22.0",
+        "prompt": "^1.0.0"
+    },
+    "devDependencies": {
+        "@types/asana": "^0.14.34",
+        "@types/commander": "^2.12.2",
+        "@types/jest": "^22.2.3",
+        "@types/node": "^9.6.5",
+        "jest": "^22.4.3",
+        "pkg": "^4.3.1",
+        "ts-jest": "^22.4.2",
+        "ts-loader": "^4.2.0",
+        "typescript": "^2.8.1",
+        "webpack": "^4.5.0",
+        "webpack-cli": "^2.0.14",
+        "webpack-node-externals": "^1.7.2"
+    }
+}
