@@ -1,8 +1,7 @@
 {
     "name": "asana-shift",
     "version": "1.0.0",
-    "description":
-        "A small script which uses the Asana API to remove external users (ie without a company email) from an organization if they haven't logged in for 30 days",
+    "description": "A small node script which uses the Asana API to shift all task start and due dates relative to a project's due date.",
     "main": "./dist/shift.js",
     "scripts": {
         "test": "jest ./tests",
@@ -27,7 +26,12 @@
             "^.+\\.ts?$": "./node_modules/ts-jest/preprocessor.js"
         },
         "testRegex": "(/tests/.*|(\\.|/)(test|spec))\\.ts?$",
-        "moduleFileExtensions": ["ts", "tsx", "js", "json"]
+        "moduleFileExtensions": [
+            "ts",
+            "tsx",
+            "js",
+            "json"
+        ]
     },
     "dependencies": {
         "axios": "^0.18.0",
