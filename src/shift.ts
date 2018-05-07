@@ -67,7 +67,7 @@ const processInputs = async (inputs: any) => {
         // 1. GET PROJECT INFORMATION
         // tell our user
         console.log("Loading your project...");
-        const projectInfo = await asana.getProject(inputs.pot);
+        const projectInfo = await asana.getProject(inputs.project);
 
         const project: Project = projectInfo[0];
         const tasks: Task[] = projectInfo[1].filter((task: Task) => task.due_on);
@@ -87,11 +87,10 @@ const processInputs = async (inputs: any) => {
         } else {
             // get shift amount
             shiftAmount = getShiftAmount(project, tasks);
+        }
 
-            // validate shift amount
-            if (shiftAmount === 0) {
-                throw "Latest task due date is aligned with project due date. Nothing to shift.";
-            }
+        if (shiftAmount === 0) {
+            throw "Latest task due date is aligned with project due date. Nothing to shift.";
         }
 
         // Execute shift
@@ -110,8 +109,8 @@ const main = () => {
     commander
         .version("1.0.0")
         .option("-t, --token <token>", "Personal Access or Service Account token")
-        .option("-p, --pot <id>", "Project ID")
-        .option("-s, --shift [shift]", "Shift amount, if no project due date is provided")
+        .option("-p, --project <id>", "Project ID")
+        .option("-s, --shift [shift]", "Shift amount, if no project due date is provided", parseInt)
         .parse(process.argv);
 
     if (commander.rawArgs.length > 2) {
@@ -120,8 +119,8 @@ const main = () => {
             console.log("Please set the `--token` option with a personal access token");
             return;
         }
-        if (!commander.pot) {
-            console.log("Please set the`--pot` option with a valid project ID");
+        if (!commander.project) {
+            console.log("Please set the`--project` option with a valid project ID");
             return;
         }
 
@@ -135,7 +134,7 @@ const main = () => {
                     pattern: /^0\//,
                     required: true
                 },
-                pot: {
+                project: {
                     message: "project id",
                     required: true
                 }

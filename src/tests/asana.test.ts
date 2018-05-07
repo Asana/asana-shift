@@ -5,12 +5,12 @@ describe("Test our logical API functions", () => {
     const asana = new Asana("0/abc123");
 
     test("Given a the proper arguments, createPackets breaks up an array into arrays of no more than 10 actions", () => {
-        const packets: Action[][] = asana._createPackets(fixtures.putActions);
+        const batches: Action[][] = asana._createBatches(fixtures.putActions);
 
-        expect(packets.length).toEqual(6);
+        expect(batches.length).toEqual(6);
 
-        for (const packet of packets) {
-            expect(packet.length).toBeLessThanOrEqual(10);
+        for (const batch of batches) {
+            expect(batch.length).toBeLessThanOrEqual(10);
         }
     });
 

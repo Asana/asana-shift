@@ -37,7 +37,7 @@ class Asana {
     constructor(private token: string) {}
 
     putTaskDates = async (tasks: Task[]) => {
-        const packetLimit = this.premium ? 150 : 15;
+        const batchLimit = this.premium ? 150 : 15;
 
         const actions: Action[] = tasks.map((task: Task): Action => ({
             method: "PUT",
@@ -48,19 +48,19 @@ class Asana {
             }
         }));
 
-        const packets = this._createPackets(actions);
+        const batches = this._createBatches(actions);
 
-        if (packets.length >= packetLimit) {
+        if (batches.length >= batchLimit) {
             throw new Error("This project has too many dates for us to shift");
         }
 
         let i = 0;
 
-        for (const packet of packets) {
+        for (const batch of batches) {
             i += 1;
             console.log(chalk.yellowBright(`– Processing task group ${i}`));
             try {
-                await this._asanaBatch(packet);
+                await this._asanaBatch(batch);
             } catch (err) {
                 console.error(chalk.red(`– Error: task group ${i} failed: ${err.message}`));
             }
@@ -97,10 +97,10 @@ class Asana {
         this.premium = tier !== "tier-0-free";
     };
 
-    _createPackets = (actions: Action[]) => {
+    _createBatches = (actions: Action[], batchSize = 10) => {
         return actions.reduce((acc, v, i, self) => {
-            if (!(i % 10)) {
-                return [...acc, self.slice(i, i + 10)];
+            if (!(i % batchSize)) {
+                return [...acc, self.slice(i, i + batchSize)];
             }
             return acc;
         }, []);
