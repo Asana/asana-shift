@@ -13,7 +13,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/Asana/deprovision_inactive_guests.git"
+        "url": "git+https://github.com/Asana/asana-shift.git"
     },
     "author": "",
     "license": "ISC",
