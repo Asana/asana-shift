@@ -1,6 +1,6 @@
 {
     "name": "asana-shift",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "A small node script which uses the Asana API to shift all task start and due dates relative to a project's due date.",
     "main": "./dist/shift.js",
     "scripts": {

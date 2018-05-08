@@ -26,15 +26,18 @@ export interface Action {
     method: string;
     relative_path: string;
     data?: Object;
-    options?: Object;
+    options?: { fields?: string[]; limit?: number; offset?: string };
 }
 
 // ASANA API
 
 class Asana {
     premium: boolean;
+    private _pageLimit: number;
 
-    constructor(private token: string) {}
+    constructor(private token: string) {
+        this._pageLimit = 100;
+    }
 
     putTaskDates = async (tasks: Task[]) => {
         const batchLimit = this.premium ? 150 : 15;
@@ -60,44 +63,64 @@ class Asana {
             i += 1;
             console.log(chalk.yellowBright(`– Processing task group ${i}`));
             try {
-                await this._asanaBatch(batch);
+                await this._asana(batch);
             } catch (err) {
-                console.error(chalk.red(`– Error: task group ${i} failed: ${err.message}`));
+                console.error(chalk.red(`– Error: task group ${i} failed: ${err}`));
             }
         }
     };
 
     getProject = async (projectId: string) => {
-        const actions = [
-            {
-                method: "GET",
-                relative_path: `projects/${projectId}`,
-                options: {
-                    fields: ["due_date", "workspace.premium_tier"]
-                }
-            },
-            {
-                method: "GET",
-                relative_path: `projects/${projectId}/tasks`,
-                options: {
-                    fields: ["start_on", "due_on", "name"]
-                }
+        const info = this._asana({
+            method: "GET",
+            relative_path: `projects/${projectId}`,
+            options: {
+                fields: ["due_date", "workspace.premium_tier"]
             }
-        ];
+        });
 
-        const response = await this._asanaBatch(actions);
+        const tasks = this._paginatedAsana({
+            method: "GET",
+            relative_path: `projects/${projectId}/tasks`,
+            options: {
+                fields: ["start_on", "due_on", "name"]
+            }
+        });
 
-        // set premiumness
-        this._setPremium(response[0].workspace.premium_tier);
+        const project = await Promise.all([await info, await tasks]);
 
-        return response;
+        return {
+            ...project[0].data,
+            tasks: project[1]
+        };
     };
 
-    _setPremium = (tier: string) => {
+    public setPremium = (tier: string) => {
         this.premium = tier !== "tier-0-free";
     };
 
-    _createBatches = (actions: Action[], batchSize = 10) => {
+    private _paginatedAsana = async <T>(action: Action) => {
+        let offset = undefined;
+        let more = false;
+        let results: any = [];
+
+        do {
+            const page: any = await this._asana({
+                ...action,
+                options: { ...action.options, limit: this._pageLimit, offset }
+            });
+
+            results = results.concat(page.data);
+
+            more = page.hasOwnProperty("next_page") && page.next_page !== null;
+
+            if (more) offset = page.next_page.offset;
+        } while (more);
+
+        return results;
+    };
+
+    private _createBatches = (actions: Action[], batchSize = 10) => {
         return actions.reduce((acc, v, i, self) => {
             if (!(i % batchSize)) {
                 return [...acc, self.slice(i, i + batchSize)];
@@ -106,21 +129,50 @@ class Asana {
         }, []);
     };
 
-    _asanaBatch = async (actions: Action[]): Promise<any> => {
+    private _asana = async (action: Action[] | Action): Promise<any> => {
+        const baseConfig = {
+            baseURL: "https://app.asana.com/api/1.0/",
+            headers: {
+                Authorization: `Bearer ${this.token}`
+            }
+        };
         try {
             // Use fetch to create a promise and call Asana
-            const response = await axios({
-                url: "/batch",
-                baseURL: "https://app.asana.com/api/1.0/",
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${this.token}`
-                },
-                data: { data: { actions } }
-            });
-            return response.data.data.map((v: any) => v.body.data);
+
+            if (Array.isArray(action)) {
+                const response = await axios({
+                    ...baseConfig,
+                    method: "POST",
+                    url: "/batch",
+                    data: { data: { actions: action } }
+                });
+                return response.data.data.map((v: any) => v.body.data);
+            } else {
+                let url = action.relative_path;
+
+                if (action.options && action.options.fields) {
+                    url += `?opt_fields=${action.options.fields.toString()}`;
+                }
+
+                if (action.options && action.options.limit) {
+                    url += `&limit=${action.options.limit}`;
+                }
+
+                if (action.options && action.options.offset) {
+                    url += `&offset=${action.options.offset}`;
+                }
+
+                const response = await axios({
+                    ...baseConfig,
+                    url,
+                    method: action.method,
+                    data: { data: { ...action.data } }
+                });
+
+                return response.data;
+            }
         } catch (err) {
-            throw err.response.data;
+            throw err;
         }
     };
 }

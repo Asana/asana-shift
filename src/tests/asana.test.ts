@@ -3,18 +3,7 @@ import * as fixtures from "../fixtures/fixtures";
 
 describe("Test our logical API functions", () => {
     const asana = new Asana("0/abc123");
-
-    test("Given a the proper arguments, createPackets breaks up an array into arrays of no more than 10 actions", () => {
-        const batches: Action[][] = asana._createBatches(fixtures.putActions);
-
-        expect(batches.length).toEqual(6);
-
-        for (const batch of batches) {
-            expect(batch.length).toBeLessThanOrEqual(10);
-        }
-    });
-
-    test("given an array of tasks, putTaskDates rejects and throws if we are over the packetLimit", () => {
+    test("given an array of tasks, putTaskDates rejects and throws if we are over the batchLimit", () => {
         const tasks = [...fixtures.tasks, ...fixtures.tasks, ...fixtures.tasks, ...fixtures.tasks];
 
         expect(asana.putTaskDates(tasks)).rejects.toEqual(

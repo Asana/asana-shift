@@ -67,10 +67,11 @@ const processInputs = async (inputs: any) => {
         // 1. GET PROJECT INFORMATION
         // tell our user
         console.log("Loading your project...");
-        const projectInfo = await asana.getProject(inputs.project);
+        const project = await asana.getProject(inputs.project);
 
-        const project: Project = projectInfo[0];
-        const tasks: Task[] = projectInfo[1].filter((task: Task) => task.due_on);
+        asana.setPremium(project.workspace.premium_tier);
+
+        const tasks: Task[] = project.tasks.filter((task: Task) => task.due_on);
 
         // validate tasks
         if (tasks.length === 0) {

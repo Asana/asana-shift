@@ -60,6 +60,8 @@ One other note, if you'd prefer to provide all the scripts options (the access t
 $ node ./dist/shift.js --token <access-token> --project <project-id>
 ```
 
+When providing all your option up front, you are also able to optionally provide a custom shift amount that the script will respect over the project due date. Keep in mind that this script only works with dates and not times – shift amounts must be a whole number (floats will simply be rounded down to their floor).
+
 ## Limitations of the script
 
 The script contains some logic to make sure you don't get yourself into trouble.
